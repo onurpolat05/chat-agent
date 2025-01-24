@@ -1,0 +1,25 @@
+{
+    "projectType": "fullstack",
+    "quality": {
+        "eslint": true,
+        "prettier": {
+            "singleQuote": true,
+            "trailingComma": "all"
+        }
+    },
+    "tsconfig": {
+        "paths": {
+            "@/*": ["./src/*"],
+            "@chains/*": ["./src/chains/*"]
+        }
+    },
+    "ai": {
+        "temperature": 0.7,
+        "model": "gpt-4o-mini"
+    },
+    "ignorePatterns": [
+        "vector-store/**",
+        "node_modules/**",
+        ".cache/**"
+    ]
+}
