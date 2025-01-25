@@ -1,11 +1,10 @@
 import { Hono } from 'hono';
-import { StreamingApi } from '@hono/node-server';
-import { ChatRequestSchema } from '../types/api.type';
-import { SessionService } from '../services/session.service';
-import { VectorStoreService } from '../services/vector-store.service';
-import { RetrievalChain } from '../chains/retrieval.chain';
+import { ChatRequestSchema } from '../types/api.type.js';
+import { SessionService } from '../services/session.service.js';
+import { VectorStoreService } from '../services/vector-store.service.js';
+import { RetrievalChain } from '../chains/retrieval.chain.js';
 
-const router = new Hono<{ Bindings: {}; Variables: {}; Response: StreamingApi }>();
+const router = new Hono<{ Bindings: {}; Variables: {}; }>();
 
 router.post('/chat', async (c) => {
   try {

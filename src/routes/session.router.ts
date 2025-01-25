@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { SessionService } from '../services/session.service';
+import { SessionService } from '../services/session.service.js';
 
 const router = new Hono();
 

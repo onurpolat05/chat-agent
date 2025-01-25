@@ -6,8 +6,7 @@ src/
 │
 ├── services/
 │   ├── vector-store.service.ts  # PDF processing
-│   ├── session.service.ts       # Redis interactions
-│   └── monitoring.service.ts    # Prometheus metrics
+│   └── session.service.ts       # Redis interactions
 │
 ├── routes/
 │   ├── chat.router.ts       # POST /chat

@@ -3,7 +3,7 @@ import { Document } from '@langchain/core/documents';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { HNSWLib } from '@langchain/community/vectorstores/hnswlib';
-import { CONFIG } from '../config';
+import { CONFIG } from '../config.js';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -70,11 +70,7 @@ export class VectorStoreService {
     
     this.vectorStore = await HNSWLib.fromDocuments(
       splitDocs,
-      this.embeddings,
-      {
-        space: 'cosine', // Cosine similarity for better matching
-        numDimensions: 1536, // OpenAI embeddings dimension
-      }
+      this.embeddings
     );
 
     // Save the vector store

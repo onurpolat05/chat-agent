@@ -2,10 +2,10 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { CONFIG } from './config';
-import chatRouter from './routes/chat.router';
-import sessionRouter from './routes/session.router';
-import { VectorStoreService } from './services/vector-store.service';
+import { CONFIG } from './config.js';
+import chatRouter from './routes/chat.router.js';
+import sessionRouter from './routes/session.router.js';
+import { VectorStoreService } from './services/vector-store.service.js';
 
 const app = new Hono();
 

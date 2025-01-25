@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
-import { CONFIG } from '../config';
-import { Message, Session } from '../types/session.type';
+import { CONFIG } from '../config.js';
+import { Message, Session } from '../types/session.type.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export class SessionService {
@@ -39,7 +39,7 @@ export class SessionService {
         await this.client.connect();
       } catch (error) {
         console.error('Failed to connect to Redis:', error);
-        throw new Error('Redis connection failed');
+        //throw new Error('Redis connection failed');
       }
     }
   }

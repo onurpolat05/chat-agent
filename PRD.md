@@ -22,9 +22,20 @@ Web tabanlı PDF ile beslenen yapay zeka asistanıyla yatırımcı etkileşimler
 | Response Time       | <2s (P95)          |
 | Error Rate          | <0.5%              |
 | Concurrent Sessions | 500+               |
-| Data Retention      | 30 days            |
+| Data Retention     | 30 days            |
 
 ## Milestones
 1. Phase 1: Core RAG Pipeline (2 Weeks)
+   - PDF işleme ve vektör veritabanı
+   - Temel sohbet akışı
+   - Session yönetimi
+
 2. Phase 2: Session Management (1 Week)
-3. Phase 3: Monitoring & Analytics (1 Week)
+   - Error handling
+   - Session yönetimi
+   - Temel güvenlik kontrolleri
+
+3. Phase 3: Optimization (1 Week)
+   - Performance optimizasyonu
+   - Load testing
+   - Documentation

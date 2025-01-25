@@ -25,3 +25,14 @@
     "wrangler": "^3.25.0"
   }
 }
+```
+
+## Development Tools
+- **Testing**: Jest
+- **CI/CD**: GitHub Actions
+- **Documentation**: OpenAPI/Swagger
+
+## Infrastructure
+- **Deployment**: Cloudflare Workers
+- **Vector Store**: Local HNSW
+- **Session Store**: Upstash Redis

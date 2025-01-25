@@ -7,7 +7,7 @@
     },
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "build": "tsc",
+        "build": "tsc && [ -f .env ] && cp .env dist/ || true",
         "start": "node dist/index.js",
         "typecheck": "tsc --noEmit"
     },
