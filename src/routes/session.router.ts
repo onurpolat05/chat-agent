@@ -1,27 +1,32 @@
-import { Hono } from 'hono';
+import { Router, RequestHandler } from 'express';
 import { SessionService } from '../services/session.service.js';
 
-const router = new Hono();
+interface SessionParams {
+  id: string;
+}
 
-router.post('/session', async (c) => {
+const router = Router();
+
+const createSession: RequestHandler = async (_req, res) => {
   try {
     const sessionService = SessionService.getInstance();
     const sessionId = await sessionService.createSession();
-    return c.json({ sessionId });
+    res.json({ sessionId });
   } catch (error) {
     console.error('Session creation error:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
 
-router.get('/session/:id', async (c) => {
+const getSession: RequestHandler = async (req, res) => {
   try {
-    const sessionId = c.req.param('id');
+    const sessionId = req.params.id;
     const sessionService = SessionService.getInstance();
     const session = await sessionService.getSession(sessionId);
 
     if (!session) {
-      return c.json({ error: 'Session not found' }, 404);
+      res.status(404).json({ error: 'Session not found' });
+      return;
     }
 
     // Format chat history for better readability
@@ -31,7 +36,7 @@ router.get('/session/:id', async (c) => {
       timestamp: new Date(msg.timestamp).toLocaleString()
     }));
 
-    return c.json({
+    res.json({
       id: session.id,
       messages: chatHistory,
       createdAt: new Date(session.createdAt).toLocaleString(),
@@ -39,8 +44,11 @@ router.get('/session/:id', async (c) => {
     });
   } catch (error) {
     console.error('Session retrieval error:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
+
+router.post('/session', createSession);
+router.get('/session/:id', getSession);
 
 export default router; 

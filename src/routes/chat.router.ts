@@ -1,15 +1,19 @@
-import { Hono } from 'hono';
+import { Router, RequestHandler } from 'express';
 import { ChatRequestSchema } from '../types/api.type.js';
 import { SessionService } from '../services/session.service.js';
 import { VectorStoreService } from '../services/vector-store.service.js';
 import { RetrievalChain } from '../chains/retrieval.chain.js';
 
-const router = new Hono<{ Bindings: {}; Variables: {}; }>();
+interface ChatRequest {
+  sessionId: string;
+  question: string;
+}
 
-router.post('/chat', async (c) => {
+const router = Router();
+
+const chatHandler: RequestHandler = async (req, res) => {
   try {
-    const body = await c.req.json();
-    const { sessionId, question } = ChatRequestSchema.parse(body);
+    const { sessionId, question } = ChatRequestSchema.parse(req.body);
 
     const sessionService = SessionService.getInstance();
     const vectorStore = VectorStoreService.getInstance();
@@ -32,7 +36,7 @@ router.post('/chat', async (c) => {
       content: answer,
     });
 
-    return c.json({
+    res.json({
       answer,
       sources: context.map(doc => ({
         page: doc.metadata.page || 1,
@@ -41,8 +45,10 @@ router.post('/chat', async (c) => {
     });
   } catch (error) {
     console.error('Chat error:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
+
+router.post('/chat', chatHandler);
 
 export default router; 
