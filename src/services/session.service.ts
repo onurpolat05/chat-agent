@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
 import { CONFIG } from '../config.js';
-import { Message, Session } from '../types/session.type.js';
+import { Message, Session, UserMetadata } from '../types/session.type.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export class SessionService {
@@ -44,7 +44,7 @@ export class SessionService {
     }
   }
 
-  async createSession(): Promise<string> {
+  async createSession(userMetadata: UserMetadata): Promise<string> {
     await this.ensureConnection();
     
     const sessionId = uuidv4();
@@ -53,6 +53,7 @@ export class SessionService {
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      userMetadata,
     };
 
     await this.client.set(`session:${sessionId}`, JSON.stringify(session));
@@ -94,5 +95,40 @@ export class SessionService {
 
     await this.client.set(`session:${sessionId}`, JSON.stringify(updatedSession));
     console.log(`Message added successfully to session ${sessionId}`);
+  }
+
+  async getAllSessions(): Promise<Session[]> {
+    await this.ensureConnection();
+    
+    const sessionKeys = await this.client.keys('session:*');
+    if (sessionKeys.length === 0) {
+      return [];
+    }
+
+    // Get all sessions in parallel
+    const sessionPromises = sessionKeys.map(key => this.client.get(key));
+    const results = await Promise.all(sessionPromises);
+
+    // Parse and filter out any null results
+    const sessions = results
+      .map(result => {
+        if (!result) return null;
+        try {
+          return JSON.parse(result) as Session;
+        } catch (error) {
+          console.error('Failed to parse session data:', error);
+          return null;
+        }
+      })
+      .filter((session): session is Session => session !== null);
+
+    return sessions;
+  }
+
+  async getAllSessionIds(): Promise<string[]> {
+    await this.ensureConnection();
+    
+    const keys = await this.client.keys('session:*');
+    return keys.map(key => key.replace('session:', ''));
   }
 } 

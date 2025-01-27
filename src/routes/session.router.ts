@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from 'express';
 import { SessionService } from '../services/session.service.js';
+import * as UAParser from 'ua-parser-js';
 
 interface SessionParams {
   id: string;
@@ -7,10 +8,33 @@ interface SessionParams {
 
 const router = Router();
 
-const createSession: RequestHandler = async (_req, res) => {
+const createSession: RequestHandler = async (req, res) => {
   try {
     const sessionService = SessionService.getInstance();
-    const sessionId = await sessionService.createSession();
+    
+    // Get client IP address
+    const ipAddress = 
+      req.headers['x-forwarded-for']?.toString() || 
+      req.socket.remoteAddress || 
+      'unknown';
+
+    // Parse user agent
+    const parser = new UAParser.UAParser();
+    parser.setUA(req.headers['user-agent'] || '');
+    const parsedUa = parser.getResult();
+
+    const userMetadata = {
+      ipAddress,
+      userAgent: req.headers['user-agent'] || 'unknown',
+      device: {
+        type: parsedUa.device.type || 'desktop',
+        browser: `${parsedUa.browser.name || 'unknown'} ${parsedUa.browser.version || ''}`,
+        os: `${parsedUa.os.name || 'unknown'} ${parsedUa.os.version || ''}`,
+      }
+    };
+    console.log(userMetadata, 'userMetadata');
+
+    const sessionId = await sessionService.createSession(userMetadata);
     res.json({ sessionId });
   } catch (error) {
     console.error('Session creation error:', error);
@@ -29,18 +53,12 @@ const getSession: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Format chat history for better readability
-    const chatHistory = session.messages.map(msg => ({
-      role: msg.role,
-      content: msg.content,
-      timestamp: new Date(msg.timestamp).toLocaleString()
-    }));
-
     res.json({
       id: session.id,
-      messages: chatHistory,
-      createdAt: new Date(session.createdAt).toLocaleString(),
-      updatedAt: new Date(session.updatedAt).toLocaleString()
+      messages: session.messages,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      userMetadata: session.userMetadata
     });
   } catch (error) {
     console.error('Session retrieval error:', error);
