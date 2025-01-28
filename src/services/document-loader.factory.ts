@@ -7,7 +7,7 @@ import { JSONLoader } from 'langchain/document_loaders/fs/json';
 import { Document } from '@langchain/core/documents';
 import path from 'path';
 
-export type SupportedFileType = 'pdf' | 'csv' | 'docx' | 'epub' | 'txt' | 'json';
+export type SupportedFileType = 'pdf' | 'csv' | 'docx' | 'epub' | 'txt' | 'json' | 'md';
 
 interface DocumentLoaderOptions {
   splitPages?: boolean;
@@ -17,7 +17,7 @@ interface DocumentLoaderOptions {
 
 export class DocumentLoaderFactory {
   private static readonly supportedExtensions = new Set([
-    '.pdf', '.csv', '.docx', '.epub', '.txt', '.json'
+    '.pdf', '.csv', '.docx', '.epub', '.txt', '.json', '.md'
   ]);
 
   static isSupported(filePath: string): boolean {
@@ -55,6 +55,9 @@ export class DocumentLoaderFactory {
 
       case '.json':
         return new JSONLoader(filePath, options.jsonPointer).load();
+
+      case '.md':
+        return new TextLoader(filePath).load();
 
       default:
         throw new Error(`Unsupported file type: ${ext}`);

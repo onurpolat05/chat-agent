@@ -6,7 +6,8 @@ const SUPPORTED_FILE_TYPES = new Set([
   '.docx',
   '.epub',
   '.txt',
-  '.json'
+  '.json',
+  '.md'
 ]);
 
 export async function GET() {

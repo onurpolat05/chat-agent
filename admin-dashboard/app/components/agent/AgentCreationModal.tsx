@@ -10,6 +10,7 @@ const SUPPORTED_FILE_TYPES = [
   { extension: '.epub', label: 'EPUB Book' },
   { extension: '.txt', label: 'Text File' },
   { extension: '.json', label: 'JSON File' },
+  { extension: '.md', label: 'Markdown File' },
 ];
 
 interface AgentCreationModalProps {
