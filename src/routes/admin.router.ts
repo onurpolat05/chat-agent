@@ -1,72 +1,186 @@
-import { Router, RequestHandler } from 'express';
-import { SessionService } from '../services/session.service.js';
-import { Session } from '../types/session.type.js';
+import express from 'express';
+import multer from 'multer';
+import { agentService } from '../services/agent.service.js';
+import { sessionService } from '../services/session.service.js';
+import { DocumentLoaderFactory } from '../services/document-loader.factory.js';
+import path from 'path';
 
-const router = Router();
+const router = express.Router();
 
-interface SessionListItem {
-  id: string;
-  lastMessage: string;
-  messageCount: number;
-  userMetadata: Session['userMetadata'];
-  createdAt: number;
-  updatedAt: number;
-}
-
-const listSessions: RequestHandler = async (_req, res) => {
-  try {
-    const sessionService = SessionService.getInstance();
-    const sessions = await sessionService.getAllSessions();
-
-    // Sort sessions by updatedAt in descending order (newest first)
-    const sortedSessions: SessionListItem[] = sessions
-      .map(session => ({
-        id: session.id,
-        lastMessage: session.messages[session.messages.length - 1]?.content || '',
-        messageCount: session.messages.length,
-        userMetadata: session.userMetadata,
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt
-      }))
-      .sort((a, b) => b.updatedAt - a.updatedAt);
-
-    res.json({ sessions: sortedSessions });
-  } catch (error) {
-    console.error('Failed to list sessions:', error);
-    res.status(500).json({ error: 'Internal server error' });
+// Configure multer with file type validation
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, callback) => {
+    if (DocumentLoaderFactory.isSupported(file.originalname)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Unsupported file type: ${path.extname(file.originalname)}`));
+    }
   }
-};
+}).array('files', 10); // Allow up to 10 files
 
-const getSessionDetails: RequestHandler = async (req, res) => {
+// Get all agents
+router.get('/agents', async (req, res) => {
   try {
-    const { sessionId } = req.params;
-    const sessionService = SessionService.getInstance();
-    const session = await sessionService.getSession(sessionId);
+    const agents = await agentService.getAgents();
+    res.json(agents);
+  } catch (error) {
+    console.error('Error getting agents:', error);
+    res.status(500).json({ error: 'Failed to get agents' });
+  }
+});
 
+// Get agent by ID
+router.get('/agents/:id', async (req, res) => {
+  try {
+    const agent = await agentService.getAgentById(req.params.id);
+    if (!agent) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+    res.json(agent);
+  } catch (error) {
+    console.error('Error getting agent:', error);
+    res.status(500).json({ error: 'Failed to get agent' });
+  }
+});
+
+// Get sessions by agent ID
+router.get('/agents/:id/sessions', async (req, res) => {
+  try {
+    const sessions = await sessionService.getSessionsByAgentId(req.params.id);
+    // Map sessions to include formatted metadata
+    const formattedSessions = sessions.map(session => ({
+      ...session,
+      userMetadata: {
+        ipAddress: session.userMetadata?.ipAddress || 'Unknown',
+        device: {
+          type: session.userMetadata?.device?.type || 'Unknown',
+          browser: session.userMetadata?.device?.browser || 'Unknown',
+          os: session.userMetadata?.device?.os || 'Unknown'
+        },
+        userAgent: session.userMetadata?.userAgent || 'Unknown'
+      }
+    }));
+    res.json(formattedSessions);
+  } catch (error) {
+    console.error('Error getting sessions:', error);
+    res.status(500).json({ error: 'Failed to get sessions' });
+  }
+});
+
+// Get specific session by ID
+router.get('/sessions/:sessionId', async (req, res) => {
+  try {
+    const session = await sessionService.getSession(req.params.sessionId);
     if (!session) {
       res.status(404).json({ error: 'Session not found' });
       return;
     }
 
-    res.json({
-      session: {
-        id: session.id,
-        messages: session.messages.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-          timestamp: msg.timestamp
-        })),
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt
+    const formattedSession = {
+      ...session,
+      userMetadata: {
+        ipAddress: session.userMetadata?.ipAddress || 'Unknown',
+        device: {
+          type: session.userMetadata?.device?.type || 'Unknown',
+          browser: session.userMetadata?.device?.browser || 'Unknown',
+          os: session.userMetadata?.device?.os || 'Unknown'
+        },
+        userAgent: session.userMetadata?.userAgent || 'Unknown'
       }
+    };
+
+    res.json(formattedSession);
+  } catch (error) {
+    console.error('Error getting session:', error);
+    res.status(500).json({ error: 'Failed to get session' });
+  }
+});
+
+// Get agent details with sessions
+router.get('/agents/:id/details', async (req, res) => {
+  try {
+    const [agent, sessions] = await Promise.all([
+      agentService.getAgentById(req.params.id),
+      sessionService.getSessionsByAgentId(req.params.id)
+    ]);
+
+    if (!agent) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    // Format sessions with metadata
+    const formattedSessions = sessions.map(session => ({
+      ...session,
+      userMetadata: {
+        ipAddress: session.userMetadata?.ipAddress || 'Unknown',
+        device: {
+          type: session.userMetadata?.device?.type || 'Unknown',
+          browser: session.userMetadata?.device?.browser || 'Unknown',
+          os: session.userMetadata?.device?.os || 'Unknown'
+        },
+        userAgent: session.userMetadata?.userAgent || 'Unknown'
+      }
+    }));
+
+    res.json({
+      agent,
+      sessions: formattedSessions
     });
   } catch (error) {
-    console.error('Failed to get session details:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error getting agent details:', error);
+    res.status(500).json({ error: 'Failed to get agent details' });
   }
-};
+});
 
-router.get('/sessions', listSessions);
-router.get('/sessions/:sessionId', getSessionDetails);
+// Create a new agent
+router.post('/agents', (req, res) => {
+  upload(req, res, async (err) => {
+    try {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_COUNT') {
+          return res.status(400).json({ error: 'Too many files. Maximum is 10 files' });
+        }
+        return res.status(400).json({ error: err.message });
+      }
+
+      if (!req.body.name || !req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ error: 'Name and at least one file are required' });
+      }
+
+      const agent = await agentService.createAgent({
+        name: req.body.name,
+        files: req.files,
+      });
+
+      res.status(201).json(agent);
+    } catch (error) {
+      console.error('Error creating agent:', error);
+      if (error instanceof Error && error.message.includes('Unsupported file type')) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Failed to create agent' });
+      }
+    }
+  });
+});
+
+// Delete an agent
+router.delete('/agents/:id', async (req, res) => {
+  console.log('Deleting agent:', req.params.id);
+  try {
+    const success = await agentService.deleteAgent(req.params.id);
+    if (!success) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting agent:', error);
+    res.status(500).json({ error: 'Failed to delete agent' });
+  }
+});
 
 export default router; 

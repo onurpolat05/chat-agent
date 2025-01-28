@@ -1,17 +1,35 @@
 import { z } from 'zod';
 
+// Chat
 export const ChatRequestSchema = z.object({
-  sessionId: z.string(),
-  question: z.string(),
-});
-
-export const ChatResponseSchema = z.object({
-  answer: z.string(),
-  sources: z.array(z.object({
-    page: z.number(),
-    content: z.string(),
-  })),
+  message: z.string(),
 });
 
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
-export type ChatResponse = z.infer<typeof ChatResponseSchema>; 
+
+export interface ChatResponse {
+  response: string;
+}
+
+// Agent
+export const CreateAgentRequestSchema = z.object({
+  name: z.string(),
+});
+
+export type CreateAgentRequest = z.infer<typeof CreateAgentRequestSchema>;
+
+export interface Agent {
+  id: string;
+  name: string;
+  token: string;
+  createdAt: string;
+  pdfPath: string;
+}
+
+export interface CreateAgentResponse {
+  agent: Agent;
+}
+
+export interface ListAgentsResponse {
+  agents: Agent[];
+} 

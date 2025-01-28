@@ -1,48 +1,38 @@
 'use client';
 
-import { SessionList } from './components/session/SessionList';
-import { SessionDetails } from './components/session/SessionDetails';
+import { useAgents } from './hooks/useAgents';
+import { AgentList } from './components/agent/AgentList';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { ErrorMessage } from './components/ui/ErrorMessage';
-import { Modal } from './components/ui/Modal';
-import { useSession } from './hooks/useSession';
 
 export default function Home() {
-  const { sessions, selectedSession, loading, error, fetchSessionDetails, clearSelectedSession } = useSession();
+  const { agents, isLoading, error, createAgent, deleteAgent } = useAgents();
 
-  const handleCloseModal = () => {
-    clearSelectedSession();
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <ErrorMessage message={error} />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-[1920px] mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-          <div className="text-sm text-gray-500">
-            Total Sessions: {sessions.length}
-          </div>
-        </div>
-        
-        {loading && <LoadingSpinner />}
-        {error && <ErrorMessage message={error} />}
-
-        {!loading && !error && (
-          <SessionList
-            sessions={sessions}
-            selectedSessionId={selectedSession?.id}
-            onSessionSelect={fetchSessionDetails}
-          />
-        )}
-
-        <Modal
-          isOpen={!!selectedSession}
-          onClose={handleCloseModal}
-          title={`Session Details - ${selectedSession?.id || ''}`}
-        >
-          {selectedSession && <SessionDetails session={selectedSession} />}
-        </Modal>
+    <main className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <AgentList 
+          agents={agents} 
+          onCreateAgent={createAgent} 
+          onDeleteAgent={deleteAgent}
+        />
       </div>
-    </div>
+    </main>
   );
 }

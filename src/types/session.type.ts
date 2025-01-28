@@ -22,6 +22,7 @@ export const MessageSchema = z.object({
 
 export const SessionSchema = z.object({
   id: z.string(),
+  agentId: z.string(),
   messages: z.array(MessageSchema),
   createdAt: z.number(),
   updatedAt: z.number(),
@@ -30,4 +31,14 @@ export const SessionSchema = z.object({
 
 export type UserMetadata = z.infer<typeof UserMetadataSchema>;
 export type Message = z.infer<typeof MessageSchema>;
-export type Session = z.infer<typeof SessionSchema>; 
+export type Session = z.infer<typeof SessionSchema>;
+
+export interface SessionMetadata {
+  id: string;
+  agentId: string;
+  lastMessage: string;
+  messageCount: number;
+  createdAt: number;
+  updatedAt: number;
+  userMetadata: UserMetadata;
+} 

@@ -1,72 +1,131 @@
-import { Router, RequestHandler } from 'express';
-import { SessionService } from '../services/session.service.js';
+import express from 'express';
+import { sessionService } from '../services/session.service.js';
+import { agentService } from '../services/agent.service.js';
+import { UserMetadata } from '../types/session.type.js';
 import * as UAParser from 'ua-parser-js';
 
-interface SessionParams {
-  id: string;
+// Express'in Request tipini genişletiyoruz
+declare global {
+  namespace Express {
+    interface Request {
+      agent?: any; // veya daha spesifik bir tip
+    }
+  }
 }
 
-const router = Router();
+const router = express.Router();
 
-const createSession: RequestHandler = async (req, res) => {
-  try {
-    const sessionService = SessionService.getInstance();
-    
-    // Get client IP address
-    const ipAddress = 
-      req.headers['x-forwarded-for']?.toString() || 
-      req.socket.remoteAddress || 
-      'unknown';
-
-    // Parse user agent
-    const parser = new UAParser.UAParser();
-    parser.setUA(req.headers['user-agent'] || '');
-    const parsedUa = parser.getResult();
-
-    const userMetadata = {
-      ipAddress,
-      userAgent: req.headers['user-agent'] || 'unknown',
-      device: {
-        type: parsedUa.device.type || 'desktop',
-        browser: `${parsedUa.browser.name || 'unknown'} ${parsedUa.browser.version || ''}`,
-        os: `${parsedUa.os.name || 'unknown'} ${parsedUa.os.version || ''}`,
-      }
-    };
-    console.log(userMetadata, 'userMetadata');
-
-    const sessionId = await sessionService.createSession(userMetadata);
-    res.json({ sessionId });
-  } catch (error) {
-    console.error('Session creation error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+// Middleware to validate agent token
+const validateAgentToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const token = req.headers['x-agent-token'] as string;
+  if (!token) {
+    res.status(401).json({ error: 'Agent token is required' });
+    return;
   }
+
+  const agent = await agentService.getAgentByToken(token);
+  if (!agent) {
+    res.status(401).json({ error: 'Invalid agent token' });
+    return;
+  }
+
+  req.agent = agent;
+  next();
 };
 
-const getSession: RequestHandler = async (req, res) => {
+// Create a new session
+router.post('/', validateAgentToken, async (req, res) => {
   try {
-    const sessionId = req.params.id;
-    const sessionService = SessionService.getInstance();
-    const session = await sessionService.getSession(sessionId);
+    const agent = req.agent;
+    if (!agent) {
+      res.status(401).json({ error: 'Agent not found' });
+      return;
+    }
 
+    // Parse user agent
+    const parser = new UAParser.UAParser(req.headers['user-agent']);
+    const result = parser.getResult();
+
+    // Get user metadata from request
+    const userMetadata: UserMetadata = {
+      ipAddress: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'] || 'unknown',
+      device: {
+        type: result.device.type || 'desktop',
+        browser: result.browser.name || 'unknown',
+        os: result.os.name || 'unknown'
+      }
+    };
+
+    // Create session with user metadata
+    const session = await sessionService.createSession(agent.id, userMetadata);
+    if (!session) {
+      res.status(500).json({ error: 'Failed to create session' });
+      return;
+    }
+
+    res.status(201).json({ session });
+  } catch (error) {
+    console.error('Error creating session:', error);
+    res.status(500).json({ error: 'Failed to create session' });
+  }
+});
+
+// Get sessions for an agent
+router.get('/', validateAgentToken, async (req, res) => {
+  try {
+    const agent = req.agent;
+    const sessions = await sessionService.getSessionsByAgentId(agent.id);
+    res.json({ sessions });
+  } catch (error) {
+    console.error('Error getting sessions:', error);
+    res.status(500).json({ error: 'Failed to get sessions' });
+  }
+});
+
+// Get session details
+router.get('/:sessionId', validateAgentToken, async (req, res) => {
+  try {
+    const session = await sessionService.getSession(req.params.sessionId);
     if (!session) {
       res.status(404).json({ error: 'Session not found' });
       return;
     }
 
-    res.json({
-      id: session.id,
-      messages: session.messages,
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-      userMetadata: session.userMetadata
-    });
-  } catch (error) {
-    console.error('Session retrieval error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+    // Verify the session belongs to the agent
+    if (session.agentId !== req.agent.id) {
+      res.status(403).json({ error: 'Unauthorized access to session' });
+      return;
+    }
 
-router.post('/session', createSession);
-router.get('/session/:id', getSession);
+    res.json({ session });
+  } catch (error) {
+    console.error('Error getting session details:', error);
+    res.status(500).json({ error: 'Failed to get session details' });
+  }
+});
+
+// Delete a session
+router.delete('/:sessionId', validateAgentToken, async (req, res) => {
+  try {
+    const session = await sessionService.getSession(req.params.sessionId);
+    if (!session) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+
+    // Verify the session belongs to the agent
+    if (session.agentId !== req.agent.id) {
+      res.status(403).json({ error: 'Unauthorized access to session' });
+      return;
+    }
+
+    await sessionService.deleteSession(req.params.sessionId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: 'Failed to delete session' });
+  }
+});
 
 export default router; 

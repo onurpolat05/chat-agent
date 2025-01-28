@@ -1,134 +1,94 @@
-import { createClient } from 'redis';
-import { CONFIG } from '../config.js';
-import { Message, Session, UserMetadata } from '../types/session.type.js';
 import { v4 as uuidv4 } from 'uuid';
+import { Session, Message, SessionMetadata, UserMetadata } from '../types/session.type.js';
+import path from 'path';
+import fs from 'fs/promises';
 
-export class SessionService {
-  private static instance: SessionService;
-  private client;
-  private isConnected: boolean = false;
+class SessionService {
+  private sessions: Map<string, Session> = new Map();
+  private readonly dataDir = path.join(process.cwd(), 'data');
+  private readonly sessionsFile = path.join(this.dataDir, 'sessions.json');
 
-  private constructor() {
-    this.client = createClient({
-      url: CONFIG.redis.url
-    });
-
-    this.client.on('error', (err) => {
-      console.error('Redis Client Error:', err);
-      this.isConnected = false;
-    });
-
-    this.client.on('connect', () => {
-      console.log('Redis Client Connected');
-      this.isConnected = true;
-    });
-
-    this.client.connect().catch(console.error);
+  constructor() {
+    this.ensureDirectories();
+    this.loadSessions();
   }
 
-  static getInstance(): SessionService {
-    if (!SessionService.instance) {
-      SessionService.instance = new SessionService();
-    }
-    return SessionService.instance;
-  }
-
-  private async ensureConnection() {
-    if (!this.isConnected) {
-      try {
-        await this.client.connect();
-      } catch (error) {
-        console.error('Failed to connect to Redis:', error);
-        //throw new Error('Redis connection failed');
-      }
+  private async ensureDirectories() {
+    try {
+      await fs.access(this.dataDir);
+    } catch {
+      await fs.mkdir(this.dataDir, { recursive: true });
     }
   }
 
-  async createSession(userMetadata: UserMetadata): Promise<string> {
-    await this.ensureConnection();
-    
-    const sessionId = uuidv4();
+  private async loadSessions() {
+    try {
+      const data = await fs.readFile(this.sessionsFile, 'utf-8');
+      const sessions = JSON.parse(data) as Session[];
+      this.sessions = new Map(sessions.map(session => [session.id, session]));
+    } catch (error) {
+      console.log('No existing sessions found, starting with empty state');
+      this.sessions = new Map();
+    }
+  }
+
+  private async saveSessions() {
+    const sessions = Array.from(this.sessions.values());
+    await fs.writeFile(this.sessionsFile, JSON.stringify(sessions, null, 2));
+  }
+
+  async createSession(agentId: string, userMetadata: UserMetadata): Promise<Session> {
     const session: Session = {
-      id: sessionId,
+      id: uuidv4(),
+      agentId,
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      userMetadata,
+      userMetadata
     };
 
-    await this.client.set(`session:${sessionId}`, JSON.stringify(session));
-    return sessionId;
+    this.sessions.set(session.id, session);
+    await this.saveSessions();
+    return session;
   }
 
-  async getSession(sessionId: string): Promise<Session | null> {
-    await this.ensureConnection();
-    
-    const data = await this.client.get(`session:${sessionId}`);
-    if (!data) {
-      console.log(`Session not found: ${sessionId}`);
-      return null;
-    }
-    return JSON.parse(data);
+  async getSession(id: string): Promise<Session | null> {
+    return this.sessions.get(id) || null;
   }
 
   async addMessage(sessionId: string, message: Omit<Message, 'timestamp'>): Promise<void> {
-    await this.ensureConnection();
-    
     const session = await this.getSession(sessionId);
     if (!session) {
-      console.error(`Session not found: ${sessionId}`);
       throw new Error('Session not found');
     }
 
     const timestamp = Date.now();
-    console.log(`Adding message to session ${sessionId}:`, {
-      role: message.role,
-      content: message.content.substring(0, 100) + '...',
-      timestamp: new Date(timestamp).toLocaleString()
-    });
-
-    const updatedSession: Session = {
-      ...session,
-      messages: [...session.messages, { ...message, timestamp }],
-      updatedAt: timestamp
-    };
-
-    await this.client.set(`session:${sessionId}`, JSON.stringify(updatedSession));
-    console.log(`Message added successfully to session ${sessionId}`);
+    session.messages.push({ ...message, timestamp });
+    session.updatedAt = timestamp;
+    await this.saveSessions();
   }
 
-  async getAllSessions(): Promise<Session[]> {
-    await this.ensureConnection();
-    
-    const sessionKeys = await this.client.keys('session:*');
-    if (sessionKeys.length === 0) {
-      return [];
+  async getSessionsByAgentId(agentId: string): Promise<SessionMetadata[]> {
+    return Array.from(this.sessions.values())
+      .filter(session => session.agentId === agentId)
+      .map(session => ({
+        id: session.id,
+        agentId: session.agentId,
+        lastMessage: session.messages[session.messages.length - 1]?.content || '',
+        messageCount: session.messages.length,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+      }))
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
+  async deleteSession(id: string): Promise<boolean> {
+    const deleted = this.sessions.delete(id);
+    if (deleted) {
+      await this.saveSessions();
     }
-
-    // Get all sessions in parallel
-    const sessionPromises = sessionKeys.map(key => this.client.get(key));
-    const results = await Promise.all(sessionPromises);
-
-    // Parse and filter out any null results
-    const sessions = results
-      .map(result => {
-        if (!result) return null;
-        try {
-          return JSON.parse(result) as Session;
-        } catch (error) {
-          console.error('Failed to parse session data:', error);
-          return null;
-        }
-      })
-      .filter((session): session is Session => session !== null);
-
-    return sessions;
+    return deleted;
   }
+}
 
-  async getAllSessionIds(): Promise<string[]> {
-    await this.ensureConnection();
-    
-    const keys = await this.client.keys('session:*');
-    return keys.map(key => key.replace('session:', ''));
-  }
-} 
+export const sessionService = new SessionService(); 

@@ -2,3 +2,7 @@ node_modules/
 .env 
 vector-store/ 
 dist/
+.DS_Store
+.vscode
+data/
+uploads/

@@ -1,46 +1,34 @@
-import { Application, Request, Response, RequestHandler } from 'express';
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
-import { CONFIG } from './config.js';
+import { config } from './config.js';
 import chatRouter from './routes/chat.router.js';
-import sessionRouter from './routes/session.router.js';
 import adminRouter from './routes/admin.router.js';
-import { VectorStoreService } from './services/vector-store.service.js';
+import sessionRouter from './routes/session.router.js';
 
-const app: Application = express();
-
-// Initialize vector store
-VectorStoreService.getInstance();
+const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(morgan('dev'));
-
-const allowedOrigins = CONFIG.server.isDev 
-  ? ['http://localhost:3001', 'http://localhost:3002', 'https://tw-dashboard.vercel.app']
-  : ['https://tw-dashboard.vercel.app'];
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: config.cors.origins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-agent-token'],
   credentials: true,
   maxAge: 86400,
 }));
-
-// Health check
-const healthCheck: RequestHandler = (_req, res) => {
-  res.json({ status: 'ok' });
-};
-app.get('/health', healthCheck);
+app.use(express.json());
 
 // Routes
-app.use('/', chatRouter);
-app.use('/', sessionRouter);
-app.use('/admin', adminRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/sessions', sessionRouter);
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 // Start server
-app.listen(CONFIG.server.port, () => {
-  console.log(`Server starting on port ${CONFIG.server.port}...`);
+app.listen(config.port, () => {
+  console.log(`Server running on port ${config.port}`);
 }); 

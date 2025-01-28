@@ -1,30 +1,23 @@
-import { config } from 'dotenv';
-import { z } from 'zod';
+import dotenv from 'dotenv';
 
-config();
+dotenv.config();
 
-const envSchema = z.object({
-  OPENAI_API_KEY: z.string(),
-  REDIS_URL: z.string(),
-  PORT: z.string().transform(Number),
-  NODE_ENV: z.enum(['development', 'production']),
-  VECTOR_STORE_PATH: z.string(),
-});
-
-const env = envSchema.parse(process.env);
-
-export const CONFIG = {
+interface Config {
+  port: number;
   openai: {
-    apiKey: env.OPENAI_API_KEY,
+    apiKey: string;
+  };
+  cors: {
+    origins: string[];
+  };
+}
+
+export const config: Config = {
+  port: parseInt(process.env.PORT || '3000', 10),
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
   },
-  redis: {
-    url: env.REDIS_URL,
+  cors: {
+    origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3001'],
   },
-  server: {
-    port: env.PORT,
-    isDev: env.NODE_ENV === 'development',
-  },
-  vectorStore: {
-    path: env.VECTOR_STORE_PATH,
-  },
-} as const; 
+}; 
