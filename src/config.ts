@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -13,11 +13,16 @@ interface Config {
 }
 
 export const config: Config = {
-  port: parseInt(process.env.PORT || '3000', 10),
+  port: parseInt(process.env.PORT || "3000", 10),
   openai: {
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: process.env.OPENAI_API_KEY || "",
   },
   cors: {
-    origins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3001'],
+    origins: process.env.CORS_ORIGINS?.split(",") || [
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "http://localhost:3003",
+      "http://localhost:3004",
+    ],
   },
-}; 
+};
