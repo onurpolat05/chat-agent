@@ -1,13 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-interface Agent {
-  id: string;
-  name: string;
-  token: string;
-  createdAt: string;
-}
+import { agentService, type Agent } from '../services/agent.service';
 
 export const useAgents = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -16,9 +10,7 @@ export const useAgents = () => {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/agents');
-      if (!response.ok) throw new Error('Failed to fetch agents');
-      const data = await response.json();
+      const data = await agentService.getAgents();
       setAgents(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch agents');
@@ -29,23 +21,7 @@ export const useAgents = () => {
 
   const createAgent = async (name: string, files: File[]) => {
     try {
-      const formData = new FormData();
-      formData.append('name', name);
-      files.forEach(file => {
-        formData.append('files', file);
-      });
-
-      const response = await fetch('/api/agents', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create agent');
-      }
-      
-      const newAgent = await response.json();
+      const newAgent = await agentService.createAgent({ name, files });
       setAgents((prev) => [...prev, newAgent]);
       return newAgent;
     } catch (err) {
@@ -56,18 +32,7 @@ export const useAgents = () => {
 
   const deleteAgent = async (id: string) => {
     try {
-      const response = await fetch(`/api/agents/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Agent not found');
-        }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to delete agent');
-      }
-
+      await agentService.deleteAgent(id);
       setAgents((prev) => prev.filter(agent => agent.id !== id));
     } catch (err) {
       console.error('Delete agent error:', err);

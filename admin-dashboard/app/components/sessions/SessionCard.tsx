@@ -1,16 +1,19 @@
 import { Session } from '@/app/types/sessions';
 import { ChatMessage } from './ChatMessage';
 
-interface SessionCardProps {
+export interface SessionCardProps {
   session: Session;
   onClick: (sessionId: string) => void;
+  disabled?: boolean;
 }
 
-export const SessionCard = ({ session, onClick }: SessionCardProps) => {
+export const SessionCard = ({ session, onClick, disabled }: SessionCardProps) => {
   return (
     <div 
-      className="bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors"
-      onClick={() => onClick(session.id)}
+      className={`p-4 border rounded-lg hover:shadow-md transition-all duration-200 ${
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+      }`}
+      onClick={() => !disabled && onClick(session.id)}
     >
       <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">

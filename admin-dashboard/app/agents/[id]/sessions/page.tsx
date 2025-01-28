@@ -1,77 +1,49 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
-import { AgentDetails, Session, TabType } from '@/app/types/sessions';
+import { TabType } from '@/app/types/sessions';
 import { PageHeader } from '@/app/components/sessions/PageHeader';
 import { AgentInfoCard } from '@/app/components/sessions/AgentInfoCard';
 import { TabNavigation } from '@/app/components/sessions/TabNavigation';
 import { SessionCard } from '@/app/components/sessions/SessionCard';
 import { SessionDetailModal } from '@/app/components/sessions/SessionDetailModal';
 import { RagDetails } from '@/app/components/sessions/RagDetails';
+import { useAgentSessions } from '@/app/hooks/useAgentSessions';
 
-export default function AgentSessionsPage() {
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-[200px]">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
+
+const ErrorDisplay = ({ message }: { message: string }) => (
+  <div className="flex items-center justify-center min-h-[200px]">
+    <div className="text-red-600">Error: {message}</div>
+  </div>
+);
+
+function AgentSessionsContent() {
   const params = useParams();
-  const [data, setData] = useState<AgentDetails | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('sessions');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [sessionLoading, setSessionLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/api/admin/agents/${params.id}/details`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (params.id) {
-      fetchData();
-    }
-  }, [params.id]);
-
-  const handleSessionClick = async (sessionId: string) => {
-    try {
-      setSessionLoading(true);
-      const response = await fetch(`http://localhost:3000/api/admin/sessions/${sessionId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch session details');
-      }
-      const sessionData = await response.json();
-      setSelectedSession(sessionData);
-      setIsModalOpen(true);
-    } catch (err) {
-      console.error('Error fetching session details:', err);
-    } finally {
-      setSessionLoading(false);
-    }
-  };
+  
+  const {
+    data,
+    loading,
+    error,
+    selectedSession,
+    isModalOpen,
+    sessionLoading,
+    handleSessionClick,
+    closeModal,
+  } = useAgentSessions({ agentId: params.id as string });
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error || !data) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600">Error: {error || 'No data available'}</div>
-      </div>
-    );
+    return <ErrorDisplay message={error || 'No data available'} />;
   }
 
   const { agent, sessions } = data;
@@ -97,7 +69,8 @@ export default function AgentSessionsPage() {
                     <SessionCard
                       key={session.id}
                       session={session}
-                      onClick={handleSessionClick}
+                      onClick={() => !sessionLoading && handleSessionClick(session.id)}
+                      disabled={sessionLoading}
                     />
                   ))}
                 </div>
@@ -113,12 +86,17 @@ export default function AgentSessionsPage() {
         <SessionDetailModal
           session={selectedSession}
           isLoading={sessionLoading}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedSession(null);
-          }}
+          onClose={closeModal}
         />
       )}
     </div>
+  );
+}
+
+export default function AgentSessionsPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <AgentSessionsContent />
+    </Suspense>
   );
 } 
