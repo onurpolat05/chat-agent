@@ -6,6 +6,9 @@ import { sessionService } from './session.service.js';
 import path from 'path';
 import fs from 'fs/promises';
 
+// Helper type for public agent data
+type PublicAgent = Omit<Agent, 'token'> & { maskedToken: string };
+
 class AgentService {
   private agents: Map<string, Agent> = new Map();
   private readonly vectorStoreService: VectorStoreService;
@@ -46,6 +49,20 @@ class AgentService {
   private async saveAgents() {
     const agents = Array.from(this.agents.values());
     await fs.writeFile(this.agentsFile, JSON.stringify(agents, null, 2));
+  }
+
+  private maskToken(token: string): string {
+    if (!token) return '********';
+    if (token.length <= 8) return '*'.repeat(token.length);
+    return `${token.slice(0, 4)}${'*'.repeat(token.length - 8)}${token.slice(-4)}`;
+  }
+
+  toPublicAgent(agent: Agent): PublicAgent {
+    const { token, ...rest } = agent;
+    return {
+      ...rest,
+      maskedToken: this.maskToken(token)
+    };
   }
 
   async createAgent(dto: CreateAgentDto): Promise<Agent> {
@@ -90,21 +107,33 @@ class AgentService {
     return agent;
   }
 
-  async getAgents(): Promise<Agent[]> {
-    return Array.from(this.agents.values());
+  async getAgents(): Promise<PublicAgent[]> {
+    return Array.from(this.agents.values()).map(agent => this.toPublicAgent(agent));
   }
 
-  async getAgentById(id: string): Promise<Agent | null> {
+  private getOriginalAgent(id: string): Agent | null {
     return this.agents.get(id) || null;
   }
 
-  async getAgentByToken(token: string): Promise<Agent | null> {
+  async getAgentById(id: string): Promise<PublicAgent | null> {
+    const agent = this.getOriginalAgent(id);
+    if (!agent) return null;
+    return this.toPublicAgent(agent);
+  }
+
+  async getAgentByToken(token: string): Promise<PublicAgent | null> {
     for (const agent of this.agents.values()) {
       if (agent.token === token) {
-        return agent;
+        return this.toPublicAgent(agent);
       }
     }
     return null;
+  }
+
+  async getAgentToken(id: string): Promise<string | null> {
+    const agent = this.getOriginalAgent(id);
+    if (!agent) return null;
+    return agent.token;
   }
 
   async deleteAgent(id: string): Promise<boolean> {

@@ -7,7 +7,7 @@ import { AgentCreationModal } from './AgentCreationModal';
 interface Agent {
   id: string;
   name: string;
-  token: string;
+  maskedToken: string;
   createdAt: string;
 }
 
@@ -21,16 +21,26 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isCopying, setIsCopying] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleCopyToken = async (token: string, e: React.MouseEvent) => {
+  const handleCopyToken = async (agentId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card selection when clicking copy button
     try {
-      await navigator.clipboard.writeText(token);
-      setCopiedToken(token);
+      setIsCopying(agentId);
+      const response = await fetch(`http://localhost:3000/api/admin/agents/${agentId}/token`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch token');
+      }
+      const data = await response.json();
+      await navigator.clipboard.writeText(data.token);
+      setCopiedToken(agentId);
       setTimeout(() => setCopiedToken(null), 2000); // Reset after 2 seconds
     } catch (err) {
       console.error('Failed to copy token:', err);
+      alert('Failed to copy token. Please try again.');
+    } finally {
+      setIsCopying(null);
     }
   };
 
@@ -112,14 +122,19 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium text-gray-700">Access Token:</p>
                   <button
-                    onClick={(e) => handleCopyToken(agent.token, e)}
+                    onClick={(e) => handleCopyToken(agent.id, e)}
                     className={`p-1.5 rounded-md transition-colors duration-200 ${
-                      copiedToken === agent.token
+                      copiedToken === agent.id
                         ? 'bg-green-100 text-green-600'
                         : 'hover:bg-gray-100 text-gray-500'
                     }`}
+                    disabled={isCopying === agent.id}
                   >
-                    {copiedToken === agent.token ? (
+                    {isCopying === agent.id ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    ) : copiedToken === agent.id ? (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                       </svg>
@@ -131,7 +146,7 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
                   </button>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-md">
-                  <code className="text-xs font-mono text-gray-800 break-all">{agent.token}</code>
+                  <code className="text-xs font-mono text-gray-800 break-all">{agent.maskedToken}</code>
                 </div>
               </div>
             </div>

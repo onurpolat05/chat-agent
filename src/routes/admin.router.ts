@@ -45,6 +45,21 @@ router.get('/agents/:id', async (req, res) => {
   }
 });
 
+// Get agent token
+router.get('/agents/:id/token', async (req, res) => {
+  try {
+    const token = await agentService.getAgentToken(req.params.id);
+    if (!token) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+    res.json({ token });
+  } catch (error) {
+    console.error('Error getting agent token:', error);
+    res.status(500).json({ error: 'Failed to get agent token' });
+  }
+});
+
 // Get sessions by agent ID
 router.get('/agents/:id/sessions', async (req, res) => {
   try {

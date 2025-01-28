@@ -28,9 +28,11 @@ export interface Session {
 export interface Agent {
   id: string;
   name: string;
-  token: string;
   createdAt: string;
-  pdfPath: string;
+  files: {
+    path: string;
+    type: string;
+  }[];
 }
 
 export interface AgentDetails {
