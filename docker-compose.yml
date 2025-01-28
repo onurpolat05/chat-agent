@@ -3,25 +3,20 @@ version: '3.8'
 services:
   app:
     build:
-      context: .
+      context: ./agent-api
       dockerfile: Dockerfile
     ports:
-      - "5000:3000"
+      - "5001:3000"
     environment:
       - NODE_ENV=development
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
     volumes:
-      - ./vector-store:/app/vector-store
-      - ./docs:/app/docs
-
-  redis:
-    image: redis:7-alpine
+      - ./agent-api/vector-store:/app/vector-store
+      - ./agent-api/data:/app/data
+  agent-ui:
+    build:
+      context: ./agent-ui
+      dockerfile: Dockerfile
     ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-volumes:
-  redis_data: 
+      - "81:80"
+    depends_on:
+      - app

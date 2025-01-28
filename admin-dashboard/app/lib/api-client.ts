@@ -40,7 +40,7 @@ const handleApiError = (error: unknown) => {
   throw new ApiError('An unknown error occurred');
 };
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const apiClient = axios.create({
   baseURL,

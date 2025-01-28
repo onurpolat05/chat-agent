@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ChatSession, ChatApiResponse, SessionResponse, SessionData } from '../types/chat.types';
 
 const createApi = (apiKey: string) => axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

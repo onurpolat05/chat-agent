@@ -32,8 +32,6 @@ COPY --from=builder /app/dist ./dist
 # Copy environment variables if needed
 COPY .env ./
 
-COPY ./docs ./docs
-
 # Expose the port your application runs on
 EXPOSE 3000
 

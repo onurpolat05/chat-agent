@@ -18,9 +18,9 @@ app.use(cors({
 app.use(express.json());
 
 // Routes
-app.use('/api/chat', chatRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/sessions', sessionRouter);
+app.use('/chat', chatRouter);
+app.use('/admin', adminRouter);
+app.use('/sessions', sessionRouter);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

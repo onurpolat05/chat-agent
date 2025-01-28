@@ -47,10 +47,10 @@ npm install
 3. Create `.env` file:
 ```env
 OPENAI_API_KEY=your_api_key_here
-REDIS_URL=your_redis_url_here
+
 PORT=3000
 NODE_ENV=development
-VECTOR_STORE_PATH=./vector-store
+
 ```
 
 ## Development
