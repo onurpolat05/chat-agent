@@ -70,6 +70,7 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
         <button
           onClick={() => setIsModalOpen(true)}
           className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm hover:shadow-md flex items-center gap-2"
+          disabled={isDeleting !== null}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -82,14 +83,16 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
         {agents.map((agent) => (
           <div
             key={agent.id}
-            className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 relative group"
-            onClick={() => handleAgentClick(agent.id)}
+            className={`bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 relative group ${
+              isDeleting !== null ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+            } ${isDeleting === agent.id ? 'opacity-100' : ''}`}
+            onClick={() => !isDeleting && handleAgentClick(agent.id)}
           >
             {/* Delete Button */}
             <button
               onClick={(e) => handleDelete(agent.id, e)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-100"
-              disabled={isDeleting === agent.id}
+              className="absolute top-4 right-4 p-2 rounded-full bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-100 disabled:cursor-not-allowed"
+              disabled={isDeleting !== null}
             >
               {isDeleting === agent.id ? (
                 <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,8 +130,8 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
                       copiedToken === agent.id
                         ? 'bg-green-100 text-green-600'
                         : 'hover:bg-gray-100 text-gray-500'
-                    }`}
-                    disabled={isCopying === agent.id}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    disabled={isCopying === agent.id || isDeleting !== null}
                   >
                     {isCopying === agent.id ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +159,7 @@ export const AgentList = ({ agents, onCreateAgent, onDeleteAgent }: AgentListPro
 
       <AgentCreationModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => !isDeleting && setIsModalOpen(false)}
         onCreateAgent={onCreateAgent}
       />
     </div>
