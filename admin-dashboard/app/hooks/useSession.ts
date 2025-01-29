@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { sessionService, type Session } from '../services/session.service';
+import { sessionService } from '../services/session.service';
+import { type Session } from '../types/sessions';
 
 export const useSession = (sessionId: string) => {
   const [session, setSession] = useState<Session | null>(null);

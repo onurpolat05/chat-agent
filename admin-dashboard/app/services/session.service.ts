@@ -2,7 +2,7 @@ import { apiClient, getCached } from '../lib/api-client';
 import { type Session } from '../types/sessions';
 
 class SessionService {
-  private readonly baseUrl = '/api/admin/sessions';
+  private readonly baseUrl = '/admin/sessions';
 
   async getSession(id: string): Promise<Session> {
     return await getCached(`session_${id}`, async () => {

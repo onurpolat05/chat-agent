@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Dialog } from '@headlessui/react';
+import { type Agent } from '../../types/sessions';
 
 const SUPPORTED_FILE_TYPES = [
   { extension: '.pdf', label: 'PDF Document' },
@@ -16,7 +17,7 @@ const SUPPORTED_FILE_TYPES = [
 interface AgentCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateAgent: (name: string, files: File[]) => Promise<void>;
+  onCreateAgent: (name: string, files: File[]) => Promise<Agent>;
 }
 
 export const AgentCreationModal = ({

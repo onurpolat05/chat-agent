@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AgentCreationModal } from './AgentCreationModal';
-import { agentService, type Agent } from '../../services/agent.service';
+import { agentService } from '../../services/agent.service';
+import { type Agent } from '../../types/sessions';
 import { Button } from '../../design-system/components/Button';
 import { useLoadingState } from '../../hooks/useLoadingState';
 
 interface AgentListProps {
   agents: Agent[];
-  onCreateAgent: (name: string, files: File[]) => Promise<void>;
+  onCreateAgent: (name: string, files: File[]) => Promise<Agent>;
   onDeleteAgent: (id: string) => Promise<void>;
 }
 

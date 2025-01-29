@@ -25,14 +25,17 @@ export interface Session {
   userMetadata: UserMetadata;
 }
 
+export interface AgentFile {
+  path: string;
+  type: string;
+}
+
 export interface Agent {
   id: string;
   name: string;
   createdAt: string;
-  files: {
-    path: string;
-    type: string;
-  }[];
+  files: AgentFile[];
+  maskedToken?: string;
 }
 
 export interface AgentDetails {
@@ -40,4 +43,14 @@ export interface AgentDetails {
   sessions: Session[];
 }
 
-export type TabType = 'sessions' | 'rag'; 
+export type TabType = 'sessions' | 'rag';
+
+// Service related types
+export interface CreateAgentParams {
+  name: string;
+  files: File[];
+}
+
+export interface AgentTokenResponse {
+  token: string;
+} 

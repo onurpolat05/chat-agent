@@ -7,7 +7,7 @@ export interface CreateAgentDto {
 }
 
 class AgentService {
-  private readonly baseUrl = '/api/admin/agents';
+  private readonly baseUrl = '/admin/agents';
 
   async getAgents(): Promise<Agent[]> {
     return await getCached('agents', async () => {

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { agentService, type Agent } from '../services/agent.service';
+import { agentService } from '../services/agent.service';
+import { type Agent } from '../types/sessions';
 
 export const useAgents = () => {
   const [agents, setAgents] = useState<Agent[]>([]);

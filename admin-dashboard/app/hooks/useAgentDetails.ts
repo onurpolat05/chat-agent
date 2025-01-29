@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
-import { agentService, type Agent } from '../services/agent.service';
-import { type Session } from '../services/session.service';
-
-interface AgentDetails {
-  agent: Agent;
-  sessions: Session[];
-}
+import { agentService } from '../services/agent.service';
+import { type AgentDetails } from '../types/sessions';
 
 export const useAgentDetails = (agentId: string) => {
   const [data, setData] = useState<AgentDetails | null>(null);
