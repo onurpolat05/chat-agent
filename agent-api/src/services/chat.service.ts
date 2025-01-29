@@ -21,7 +21,7 @@ export class ChatService {
   constructor() {
     this.model = new ChatOpenAI({
       openAIApiKey: config.openai.apiKey,
-      modelName: 'gpt-4o-mini',
+      modelName: config.ai.model,
       temperature: 0.7,
     });
     this.vectorStoreService = new VectorStoreService();
