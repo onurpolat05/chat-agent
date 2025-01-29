@@ -6,7 +6,7 @@ services:
       context: ./agent-api
       dockerfile: Dockerfile
     ports:
-      - "5001:3000"
+      - "5000:3000"
     environment:
       - NODE_ENV=development
     volumes:
@@ -18,5 +18,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "81:80"
+    depends_on:
+      - app
+  admin-ui:
+    build:
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "5005:3000"
     depends_on:
       - app
