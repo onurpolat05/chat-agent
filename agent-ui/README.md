@@ -78,62 +78,83 @@ function App() {
 ```
 
 ### Method 2: Embed via Script
-Add a container div to your HTML:
-```html
-<div id="chat-container"></div>
+ 
+## Prerequisites
+- Next.js project
+- Access to widget files (`main.js` and `main.css`)
+- Valid widget ID from the chatbot service
+
+## Integration Steps
+
+### 1. Add Widget Files
+Place the widget files in your public directory:
+```
+public/
+  agent-ui/
+    static/
+      css/
+        main.css
+      js/
+        main.js
 ```
 
-Initialize the chat widget:
-```javascript
-window.initChatUI(
-  'chat-container',
-  'your-api-key',
-  'right',
-  'Hello! How can I help you today?'
-);
+### 2. Update _document.tsx
+Add the following code to your `pages/_document.tsx`:
+```tsx
+<Head>
+  <link
+    rel="stylesheet"
+    href="/agent-ui/static/css/main.css"
+  />
+  <script
+    src="/agent-ui/static/js/main.js"
+    type="text/javascript"
+    async
+  ></script>
+</Head>
+<body>
+  <Main />
+  <NextScript />
+  <div id="chatbot-widget"></div>
+</body>
 ```
 
-## Configuration Options
-- `apiKey`: Required. Authentication key for the chat service
-- `position`: Optional. Widget position ('left' or 'right', defaults to 'right')
-- `defaultMessage`: Optional. Custom welcome message for new sessions
-- `containerId`: Required for script embedding. ID of the container element
+### 3. Initialize the Widget
+Add the following code to your `pages/_app.tsx`:
+```tsx
+const initChat = () => {
+  if (!window.initChatUI) {
+    setTimeout(initChat, 1000);
+    return;
+  }
 
-## Integration Examples
+  const chatbotWidget = document.getElementById("chatbot-widget");
+  if (chatbotWidget && !isInitialized) {
+    window.initChatUI(
+      "chatbot-widget",
+      "YOUR_WIDGET_ID",
+      "left",
+      "Welcome Message"
+    );
+    isInitialized = true;
+  }
+};
 
-### Customer Support
-```javascript
-window.initChatUI(
-  'support-chat',
-  'api-key',
-  'right',
-  'Welcome to our support! How can I assist you today?'
-);
+useEffect(() => {
+  initChat();
+  return () => {
+    isInitialized = false;
+  };
+}, []);
 ```
 
-### Knowledge Base Q&A
-```javascript
-window.initChatUI(
-  'kb-chat',
-  'api-key',
-  'left',
-  'Ask me anything about our documentation!'
-);
-```
+## Configuration Parameters
+- `chatbot-widget`: Widget container ID
+- `YOUR_WIDGET_ID`: Your unique widget identifier
+- `left`: Widget position (can be 'left' or 'right')
+- `Welcome Message`: Custom welcome message for users
 
-### Product Assistant
-```javascript
-window.initChatUI(
-  'product-chat',
-  'api-key',
-  'right',
-  'Need help choosing a product? I\'m here to help!'
-);
-```
-
-## Contributing
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## Notes
+- The widget will automatically initialize when the page loads
+- Make sure to replace `YOUR_WIDGET_ID` with your actual widget ID
+- The widget position can be customized by changing the third parameter 

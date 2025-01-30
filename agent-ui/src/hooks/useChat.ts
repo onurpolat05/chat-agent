@@ -3,7 +3,7 @@ import { Message } from '../types/chat.types';
 import { chatApi } from '../api/chat';
 
 const STORAGE_KEY = 'chat_session_id';
-const DEFAULT_WELCOME_MESSAGE = 'Merhaba! Size nasıl yardımcı olabilirim?';
+const DEFAULT_WELCOME_MESSAGE = 'Welcome to the chat! How can I help you today?';
 
 export function useChat(apiKey: string, customWelcomeMessage?: string) {
   const [messages, setMessages] = useState<Message[]>([]);

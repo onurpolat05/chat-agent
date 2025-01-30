@@ -1,167 +1,95 @@
 # Investor Chat Agent
 
-An intelligent AI-powered chatbot system designed for investors, leveraging LangChain and OpenAI. The system processes investment documents and provides context-aware responses to investor queries with advanced memory management.
+A smart chatbot that helps investors by using AI technology. It can read investment documents and answer questions about them using OpenAI and LangChain.
 
-## Key Features
+## Main Features
 
-- **Smart Document Analysis**: Processes PDF documents and extracts relevant information
-- **Context-Aware Responses**: Uses RAG (Retrieval Augmented Generation) for accurate answers
-- **Memory Management**: Implements intelligent chat history management
-  - Maintains last 10 messages for context
-  - Prevents LLM context window overflow
-  - Provides clear history functionality
-- **Session-Based Conversations**: Manages multiple user sessions via Redis
-- **Real-time Response Streaming**: Supports streaming responses for better UX
-- **Type Safety**: Full TypeScript implementation with Zod validation
+- Reads and understands  documents
+- Gives accurate answers using document context
+- Handles multiple user conversations at once
+- Shows responses in real-time
+- Built with TypeScript for reliability
 
-## Tech Stack
+## Technology Used
 
-- **Runtime**: Node.js 20+ (ESM)
-- **Language**: TypeScript 5.3
-- **AI Framework**: LangChain 0.2
-- **Vector DB**: HNSWLib (On-disk)
-- **API Layer**: Hono (Edge-ready)
-- **Session Store**: Redis (Upstash)
-- **Model**: GPT-4 Mini
+- Node.js 20+
+- TypeScript 5.3
+- Express.js for API server
+- LangChain and OpenAI for AI features
+- PDF Parser for document processing
+- Zod for validation
+- Morgan for logging
+- CORS for API security
+- UUID for session management
+- Multer for file uploads
 
-## Prerequisites
+## Setup Requirements
 
-- Node.js >= 18.0.0
-- Redis instance
+- Node.js 18 or newer
+- Redis database
 - OpenAI API key
-- PDF documents for analysis
+- PDF documents
 
-## Installation
+## How to Install
 
-1. Clone the repository:
+1. Get the project:
 ```bash
-git clone https://github.com/yourusername/investor-chat-agent.git
-cd investor-chat-agent
+https://github.com/onurpolat05/chat-agent
+cd chat-agent
 ```
 
-2. Install dependencies:
+2. Install needed packages:
 ```bash
 npm install
 ```
 
-3. Create `.env` file:
+3. Set up environment file (.env):
 ```env
 OPENAI_API_KEY=your_api_key_here
-
 PORT=3000
 NODE_ENV=development
-
+AI_MODEL=gpt-4o
+CORS_ORIGINS=http://localhost:3001
 ```
 
 ## Development
 
-Start the development server:
+To start the project:
 ```bash
 npm run dev
 ```
 
-## API Endpoints
+## Main API Endpoints
 
-### POST /session
-Creates a new chat session.
-
-Response:
-```json
-{
-  "sessionId": "uuid-string"
-}
-```
-
-### GET /session/:id
-Retrieves session details and chat history.
-
-Response:
-```json
-{
-  "id": "session-id",
-  "messages": [
-    {
-      "role": "user|assistant",
-      "content": "message content",
-      "timestamp": "timestamp"
-    }
-  ],
-  "createdAt": "timestamp",
-  "updatedAt": "timestamp"
-}
-```
-
-### POST /chat
-Sends a question and receives an AI response.
-
-Request:
-```json
-{
-  "sessionId": "session-id",
-  "question": "your question here"
-}
-```
-
-Response:
-```json
-{
-  "answer": "AI response",
-  "sources": [
-    {
-      "page": 1,
-      "content": "relevant content"
-    }
-  ]
-}
-```
+- `POST /session`: Start a new chat
+- `GET /session/:id`: Get chat history
+- `POST /chat`: Send questions and get answers
 
 ## Project Structure
 
 ```
 src/
-├── chains/                 # LangChain compositions
-│   ├── retrieval.chain.ts  # Main QA chain with memory
-│   └── safety.chain.ts     # Content filtering
-│
-├── services/
-│   ├── vector-store.service.ts  # Document processing
-│   ├── session.service.ts       # Redis interactions
-│   └── monitoring.service.ts    # System monitoring
-│
-├── routes/
-│   ├── chat.router.ts      # Chat endpoints
-│   └── session.router.ts   # Session management
-│
-├── types/
-│   ├── session.type.ts     # Type definitions
-│   └── api.type.ts         # API schemas
-│
-└── config.ts               # Configuration
+├── services/     # Handles data and business logic
+├── routes/       # API endpoints
+├── types/        # TypeScript definitions
+├── index.ts      # Main application file
+└── config.ts     # Settings
 ```
 
-## Memory Management
+## Features
 
-The system implements intelligent memory management to maintain conversation context while preventing token limit issues:
-
-- Keeps last 10 messages in conversation history
-- Automatically filters older messages
-- Provides manual history clearing option
-- Session-based isolation for multiple users
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- Keeps track of recent messages
+- Manages multiple users at once
+- Provides clear and relevant answers
+- Safely handles user data
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project uses the MIT License.
 
-## Acknowledgments
+## Credits
 
-- LangChain team for the excellent framework
-- OpenAI for the GPT models
-- Hono team for the performant web framework 
+Thanks to:
+- LangChain
+- OpenAI
+- Hono 

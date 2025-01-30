@@ -1,134 +1,89 @@
-# AI Chat Agent Admin Dashboard
+# AI Chatbot Management Dashboard
 
 ## Overview
-A modern Next.js-based admin dashboard for managing AI chat agents and monitoring chat sessions. This dashboard provides a comprehensive interface for creating, configuring, and managing AI chat agents, as well as analyzing their performance and interactions.
+A sophisticated Next.js-based admin dashboard for creating and managing multiple AI chatbots enhanced with RAG (Retrieval-Augmented Generation) capabilities. This platform enables users to create customized chatbots, upload relevant documents for knowledge enhancement, and monitor chat interactions effectively.
 
-## Features
+## Key Features
 
-### Agent Management
-- Create and configure new AI chat agents
-- Monitor agent status and performance
-- Delete  agents
-- Customize agent parameters and responses
+### Chatbot Management
+- Create and manage multiple AI chatbots
+- Customize each chatbot's behavior and settings
+- Upload and manage multiple documents for RAG implementation
 
-### Session Monitoring
-- Real-time chat session monitoring
-- Historical chat logs and analytics
-- User interaction tracking
-- Performance metrics and insights
+### Document Management
+- Upload various document types (PDF, TXT, DOCX)
+- Organize documents by chatbot
+- Manage document processing status
 
-### Design System
-- Modern and responsive UI components
-- Tailwind CSS for styling
-- Custom UI components library
-- Consistent design patterns
+### Conversation Monitoring
+- View real-time chat sessions
+- Access conversation history
 
 ## Technical Stack
 - Next.js 14 with App Router
 - TypeScript for type safety
-- Tailwind CSS for styling
-- React Hooks for state management
+- Tailwind CSS for modern UI
+- React Query for state management
 - RESTful API integration
 
 ## Project Structure
 ```
 admin-dashboard/
 ├── app/
-│   ├── components/
-│   │   ├── agent/     # Agent management components
-│   │   ├── sessions/  # Session monitoring components
-│   │   └── ui/        # Reusable UI components
-│   ├── hooks/         # Custom React hooks
-│   ├── services/      # API services
-│   ├── lib/           # Utility functions
-│   ├── types/         # TypeScript definitions
-│   ├── design-system/ # Design system components
-│   └── page.tsx       # Main dashboard page
+│   ├── agents/           # Chatbot management pages
+│   ├── components/       # Reusable UI components
+│   ├── design-system/   # UI component library
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utility functions
+│   ├── services/        # API integration services
+│   └── types/           # TypeScript definitions
 ```
-
-## Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn package manager
-- Access to backend API services
 
 ## Getting Started
 
-### Installation
-1. Clone the repository
-2. Navigate to the project directory:
-   ```bash
-   cd admin-dashboard
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-   Configure the necessary API endpoints and credentials.
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- Access to backend API services
 
-### Development
-Run the development server:
+ 
+
+
+Start development server:
 ```bash
 npm run dev
 ```
-The dashboard will be available at http://localhost:3000
 
-### Building for Production
-Create a production build:
-```bash
-npm run build
-```
+Visit http://localhost:3000 to access the dashboard.
 
-Run the production server:
-```bash
-npm start
-```
+## Usage Guide
 
-## Key Features
+### Creating a New Chatbot
+1. Click "Create New Agent"
+2. Configure basic settings:
+   - Name and upload documents
 
-### Agent Management Interface
-- Create new chat agents with customizable parameters
-- Monitor agent status and performance metrics
-- Configure agent responses and behavior
-- Manage agent deployment and activation
 
-### Session Monitoring
-- View active and historical chat sessions
-- Analyze user interactions and patterns
-- Track performance metrics and response times
-- Export session data for analysis
-
-### Admin Controls
-- User authentication and authorization
-- Role-based access control
-- System configuration management
-- API key management
+### Monitoring Conversations
+1. View active and historical chats
 
 ## API Integration
-The dashboard integrates with backend services through RESTful APIs:
-- Agent management endpoints
-- Session monitoring endpoints
-- Analytics and reporting endpoints
-- User management endpoints
+The dashboard connects to backend services for:
+- Chatbot creation and management
+- Document processing and RAG implementation
+- Conversation handling
+- Analytics data retrieval
+
+
+## Support and Documentation
+For technical support or questions:
+- Create an issue in the repository
+- Contact technical support team
+- Refer to API documentation
 
 ## Contributing
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Security
-- Implements secure authentication
-- Role-based access control
-- API key management
-- Secure data transmission
-
-## Support
-For support and questions, please open an issue in the repository or contact the development team.
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Submit a pull request

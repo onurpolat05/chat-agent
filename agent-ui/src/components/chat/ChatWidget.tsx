@@ -61,7 +61,7 @@ export function ChatWidget({ apiKey, position = 'right', defaultMessage }: ChatW
         <div className="messages-container">
           {messages.length === 0 && !isLoading && (
             <button onClick={sendWelcomeMessage} className="welcome-button">
-              Karşılama mesajı gönder
+              Welcome message
             </button>
           )}
           {messages.map((message: Message, index: number) => (
