@@ -2,14 +2,11 @@
 
 A comprehensive RAG-based (Retrieval-Augmented Generation) chatbot solution that demonstrates how to effectively implement LLMs with LangChain. What started as an educational project has evolved into a full-featured system with an API, admin dashboard, and embeddable chat widget.
 
-### Video 1
+### Demo Videos
 
+[![Admin Dashboard Demo](https://img.youtube.com/vi/zBTSlGhDmu8/0.jpg)](https://youtu.be/zBTSlGhDmu8)
 
-![Admin Dashboard Demo](https://youtu.be/zBTSlGhDmu8)
-
-### Video 2
-
-![Chat Widget Demo](https://youtube.com/shorts/-daQSuFkHAw?feature=share)
+[![Chat Widget Demo](https://img.youtube.com/vi/-daQSuFkHAw/0.jpg)](https://youtube.com/shorts/-daQSuFkHAw)
 
 ## Overview
 
