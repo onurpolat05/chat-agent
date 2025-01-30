@@ -2,9 +2,13 @@
 
 A comprehensive RAG-based (Retrieval-Augmented Generation) chatbot solution that demonstrates how to effectively implement LLMs with LangChain. What started as an educational project has evolved into a full-featured system with an API, admin dashboard, and embeddable chat widget.
 
-![Admin Dashboard Demo](admin-dashboard/images/Create%20New%20Q%26A%20Agent.mp4)
-![Chat Widget Demo](agent-ui/images/agent-ui.mp4)
+### Video 1
+![Admin Dashboard Demo](/admin-dashboard/images/admin-dashboard.mp4)
+[Admin Dashboard Demo](/admin-dashboard/images/admin-dashboard.mp4)
 
+### Video 2
+![Chat Widget Demo](/agent-ui/images/agent-ui.mp4)
+[Chat Widget Demo](/agent-ui/images/agent-ui.mp4)
 ## Overview
 
 This project provides a complete solution for creating and managing AI-powered chatbots enhanced with document-based knowledge. Users can create multiple chat agents through an admin dashboard, feed them with various document types, and easily integrate them into any website using the provided chat widget.
@@ -81,7 +85,7 @@ investor-chat-agent/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/investor-chat-agent.git
+git clone git@github.com:onurpolat05/chat-agent.git
 cd investor-chat-agent
 ```
 
