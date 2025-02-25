@@ -7,7 +7,7 @@ import path from 'path';
 
 const router = express.Router();
 
-// Configure multer with file type validation
+ // Configure multer with file type validation
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, callback) => {
@@ -17,7 +17,7 @@ const upload = multer({
       callback(new Error(`Unsupported file type: ${path.extname(file.originalname)}`));
     }
   }
-}).array('files', 10); // Allow up to 10 files
+}).array('files', 20); // Allow up to 20 files
 
 // Get all agents
 router.get('/agents', async (req, res) => {
@@ -156,7 +156,7 @@ router.post('/agents', (req, res) => {
     try {
       if (err) {
         if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ error: 'Too many files. Maximum is 10 files' });
+          return res.status(400).json({ error: 'Too many files. Maximum is 20 files' });
         }
         return res.status(400).json({ error: err.message });
       }

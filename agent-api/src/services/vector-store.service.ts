@@ -160,6 +160,7 @@ export class VectorStoreService {
       const results = await vectorStore.similaritySearch(query, searchLimit * 2, {
         filter: (doc: Document) => doc.metadata.agentId === agentId
       });
+      console.log(results, 'results');
 
       // Sort by relevance and limit results
       return results
