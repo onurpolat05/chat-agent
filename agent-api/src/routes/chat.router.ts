@@ -39,6 +39,7 @@ router.post('/:sessionId', validateAgentToken, async (req, res) => {
   try {
     const { message } = req.body;
     const { sessionId } = req.params;
+    const { userPrompt } = req.body;
 
     if (!message) {
       res.status(400).json({ error: 'Message is required' });
@@ -74,7 +75,8 @@ router.post('/:sessionId', validateAgentToken, async (req, res) => {
     const response = await chatService.chat(
       message, 
       req.headers['x-agent-token'] as string,
-      chatHistory
+      chatHistory,
+      userPrompt
     );
 
     // Add assistant response to session

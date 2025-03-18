@@ -17,10 +17,11 @@ export const chatApi = {
     return data;
   },
 
-  sendMessage: async (sessionId: string, message: string, apiKey: string): Promise<string> => {
+  sendMessage: async (sessionId: string, message: string, apiKey: string,userPrompt?: string): Promise<string> => {
     const api = createApi(apiKey);
     const { data } = await api.post<ChatApiResponse>(`/chat/${sessionId}`, {
       message,
+      userPrompt
     });
     return data.response;
   },

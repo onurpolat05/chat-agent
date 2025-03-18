@@ -41,8 +41,8 @@ export function ChatWidget({ apiKey, position = 'right', defaultMessage, fetchOn
 
   useEffect(() => {
      // @ts-ignore
-    window.sendChatMessage = (message: string) => {
-      sendMessage(message);
+    window.sendChatMessage = (message: string,userPrompt?: string) => {
+      sendMessage(message,userPrompt);
     };
   }, [sendMessage]);
 

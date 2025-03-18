@@ -86,12 +86,12 @@ export function useChat(apiKey: string, customWelcomeMessage?: string) {
     }
   }, [sessionId, apiKey, addWelcomeMessage]);
 
-  const sendMessage = useCallback(async (message: string) => {
+  const sendMessage = useCallback(async (message: string,userPrompt?: string) => {
     if (!sessionId || !message.trim()) return;
 
     const userMessage: Message = {
       role: 'user',
-      content: message.trim(),
+      content: message.trim() ,
       timestamp: Date.now(),
     };
 
@@ -100,7 +100,7 @@ export function useChat(apiKey: string, customWelcomeMessage?: string) {
       setIsLoading(true);
       setError(null);
 
-      const response = await chatApi.sendMessage(sessionId, message, apiKey);
+      const response = await chatApi.sendMessage(sessionId, message, apiKey,userPrompt);
       const assistantMessage: Message = {
         role: 'assistant',
         content: response,
