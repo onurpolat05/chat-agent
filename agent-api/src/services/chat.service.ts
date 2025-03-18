@@ -39,13 +39,13 @@ export class ChatService {
     {context}`;
 
     // Create the prompt template
-    const qaPrompt = ChatPromptTemplate.fromMessages([
+/*     const qaPrompt = ChatPromptTemplate.fromMessages([
       ["system", qaSystemPrompt],
       new MessagesPlaceholder("chat_history"),
       ["human", "{question}"],
-    ]);
+    ]); */
 
-    // Create the RAG chain
+ /*    // Create the RAG chain
     this.ragChain = RunnableSequence.from([
       RunnablePassthrough.assign({
         context: async (input: { 
@@ -66,10 +66,10 @@ export class ChatService {
       this.model,
       // Convert the response to string
       (response) => response.content.toString()
-    ]);
+    ]); */
   }
 
-  async chat(message: string, token: string, chatHistory: Array<HumanMessage | AIMessage> = []): Promise<string> {
+  async chat(message: string, token: string, chatHistory: Array<HumanMessage | AIMessage> = [],userPrompt?: string): Promise<string> {
     try {
       // Get agent by token
       const agent = await agentService.getAgentByToken(token);
@@ -77,11 +77,13 @@ export class ChatService {
         throw new Error('Invalid agent token');
       }
 
+      console.log("chatHistory", userPrompt);
+
       // Invoke the chain
       const response = await this.ragChain.invoke({
-        question: message,
+        question: message + " " + userPrompt,
         chat_history: chatHistory,
-        agentId: agent.id
+        agentId: agent.id,
       });
 
       return response;
