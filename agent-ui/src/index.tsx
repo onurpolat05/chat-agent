@@ -9,7 +9,8 @@ window.initChatUI = (
   containerId: string,
   apiKey: string,
   chatPosition: 'left' | 'right' = 'right',
-  defaultMessage?: string
+  defaultMessage?: string,
+  fetchOnOpen?: boolean,
 ) => {
   const container = document.getElementById(containerId);
   if (container) {
@@ -19,6 +20,7 @@ window.initChatUI = (
         apiKey={apiKey}
         chatPosition={chatPosition}
         defaultMessage={defaultMessage}
+        fetchOnOpen={fetchOnOpen}
       />
     );
   }

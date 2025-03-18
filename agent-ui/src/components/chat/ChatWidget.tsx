@@ -7,9 +7,10 @@ interface ChatWidgetProps {
   apiKey: string;
   position?: 'left' | 'right';
   defaultMessage?: string;
+  fetchOnOpen?: boolean;
 }
 
-export function ChatWidget({ apiKey, position = 'right', defaultMessage }: ChatWidgetProps) {
+export function ChatWidget({ apiKey, position = 'right', defaultMessage, fetchOnOpen = true }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const { messages, isLoading, error, sendMessage, initSession, sessionId, sendWelcomeMessage } = useChat(apiKey, defaultMessage);
@@ -27,10 +28,23 @@ export function ChatWidget({ apiKey, position = 'right', defaultMessage }: ChatW
   }, [messages, isOpen]);
 
   useEffect(() => {
+    if (fetchOnOpen && isOpen) {
+      initSession();
+    }
+  }, [fetchOnOpen, isOpen, initSession]);
+
+  useEffect(() => {
     if (isOpen && !sessionId) {
       initSession();
     }
   }, [isOpen, sessionId, initSession]);
+
+  useEffect(() => {
+     // @ts-ignore
+    window.sendChatMessage = (message: string) => {
+      sendMessage(message);
+    };
+  }, [sendMessage]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
