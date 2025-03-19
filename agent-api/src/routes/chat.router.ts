@@ -66,7 +66,8 @@ router.post('/:sessionId', validateAgentToken, async (req, res) => {
     const { message } = req.body;
     const { sessionId } = req.params;
     const { productInfo } = req.body;
-    console.log("productInfo", req);
+    console.log("productInfo", productInfo);
+    console.log("message", message);
      if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
@@ -96,8 +97,7 @@ router.post('/:sessionId', validateAgentToken, async (req, res) => {
       role: 'user',
       content: message
     });
-    console.log("productInfo", productInfo);
-    let productsReviews = {};
+     let productsReviews = {};
     if (productInfo) {
       console.log("Start search amazon products")
       const parsedProductInfo = JSON.parse(productInfo);
