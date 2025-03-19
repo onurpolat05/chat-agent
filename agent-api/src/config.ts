@@ -10,6 +10,9 @@ interface Config {
   ai: {
     model: string;
   };
+  apify: {
+    apiKey: string;
+  };
   cors: {
     origins: string[];
   };
@@ -30,5 +33,8 @@ export const config: Config = {
       "http://localhost:3003",
       "http://localhost:3004",
     ],
+  },
+  apify: {
+    apiKey: process.env.APIFY_API_KEY || "",
   },
 };

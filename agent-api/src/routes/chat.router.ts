@@ -3,7 +3,8 @@ import { ChatService } from '../services/chat.service.js';
 import { agentService } from '../services/agent.service.js';
 import { sessionService } from '../services/session.service.js';
 import { HumanMessage, AIMessage } from '@langchain/core/messages';
-
+import { ApifyClient } from 'apify-client'; // Import the Apify client
+import { config } from '../config.js';
 // Express'in Request tipini genişletiyoruz
 declare global {
   namespace Express {
@@ -15,6 +16,7 @@ declare global {
 
 const router = express.Router();
 const chatService = new ChatService();
+const apifyClient = new ApifyClient({ token: config.apify.apiKey }); // Replace with your actual token
 
 // Middleware to validate agent token
 const validateAgentToken = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -34,14 +36,37 @@ const validateAgentToken = async (req: express.Request, res: express.Response, n
   next();
 };
 
+const searchAmazonProductReviews = async (targetDomain: string, asin: string) => {
+  console.log("Search Amazon products:", targetDomain, asin);
+
+  // Define the input for the Apify actor
+  const input = {
+    startUrls: [
+     `https://www.amazon.${targetDomain}/dp/${asin}`
+    ],
+    proxy: {
+      useApifyProxy: true
+    },
+    includeOtherCountriesReviews: true
+  };
+
+  // Call the Apify actor and wait for the results
+  const { defaultDatasetId } = await apifyClient.actor('epctex/amazon-reviews-scraper').call(input);
+
+  // Fetch the results from the dataset
+  const { items } = await apifyClient.dataset(defaultDatasetId).listItems();
+  console.log("Amazon products:", items);
+
+  return items; // Re
+};
+
 // Chat endpoint
 router.post('/:sessionId', validateAgentToken, async (req, res) => {
   try {
     const { message } = req.body;
     const { sessionId } = req.params;
-    const { userPrompt } = req.body;
-
-    if (!message) {
+    const { productInfo } = req.body;
+     if (!message) {
       res.status(400).json({ error: 'Message is required' });
       return;
     }
@@ -70,13 +95,21 @@ router.post('/:sessionId', validateAgentToken, async (req, res) => {
       role: 'user',
       content: message
     });
+    let productsReviews = {};
+    if (productInfo) {
+      console.log("Start search amazon products")
+      const parsedProductInfo = JSON.parse(productInfo);
+      productsReviews = await searchAmazonProductReviews(parsedProductInfo.targetDomain, parsedProductInfo.asin);
+      console.log("Amazon products:", productsReviews);
+    }
 
     // Get chat response with history
     const response = await chatService.chat(
       message, 
       req.headers['x-agent-token'] as string,
       chatHistory,
-      userPrompt
+      productInfo,  
+      productsReviews
     );
 
     // Add assistant response to session
