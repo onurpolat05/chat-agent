@@ -1,15 +1,19 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
-import { config } from '../config.js';
-import { VectorStoreService } from './vector-store.service.js';
-import { agentService } from './agent.service.js';
-import { 
-  ChatPromptTemplate, 
-  MessagesPlaceholder 
+import { ChatOpenAI } from "@langchain/openai";
+import {
+  HumanMessage,
+  AIMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
+import { config } from "../config.js";
+import { VectorStoreService } from "./vector-store.service.js";
+import { agentService } from "./agent.service.js";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
 } from "@langchain/core/prompts";
-import { 
+import {
   RunnableSequence,
-  RunnablePassthrough 
+  RunnablePassthrough,
 } from "@langchain/core/runnables";
 import { formatDocumentsAsString } from "langchain/util/document";
 
@@ -100,8 +104,8 @@ Strategic Recommendations: The advantages of fast delivery and reasonable price 
     // Create the RAG chain
     this.ragChain = RunnableSequence.from([
       RunnablePassthrough.assign({
-        context: async (input: { 
-          question: string; 
+        context: async (input: {
+          question: string;
           chat_history: Array<HumanMessage | AIMessage>;
           agentId: string;
         }) => {
@@ -117,16 +121,21 @@ Strategic Recommendations: The advantages of fast delivery and reasonable price 
       qaPrompt,
       this.model,
       // Convert the response to string
-      (response) => response.content.toString()
+      (response) => response.content.toString(),
     ]);
   }
 
-  async chat(message: string, token: string, chatHistory: Array<HumanMessage | AIMessage> = [],userPrompt?: string): Promise<string> {
+  async chat(
+    message: string,
+    token: string,
+    chatHistory: Array<HumanMessage | AIMessage> = [],
+    userPrompt?: string
+  ): Promise<string> {
     try {
       // Get agent by token
       const agent = await agentService.getAgentByToken(token);
       if (!agent) {
-        throw new Error('Invalid agent token');
+        throw new Error("Invalid agent token");
       }
       // add system prompt to chat history
 
@@ -141,8 +150,8 @@ Strategic Recommendations: The advantages of fast delivery and reasonable price 
 
       return response;
     } catch (error) {
-      console.error('Error in chat:', error);
+      console.error("Error in chat:", error);
       throw error;
     }
   }
-} 
+}
