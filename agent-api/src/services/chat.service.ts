@@ -26,86 +26,101 @@ export class ChatService {
     this.model = new ChatOpenAI({
       openAIApiKey: config.openai.apiKey,
       modelName: config.ai.model,
- 
     });
     this.vectorStoreService = new VectorStoreService();
     this.initializeChain();
   }
 
   private initializeChain() {
-    // Define the system prompt for product analysis
-    const productAnalysisPrompt = `You are an AI assistant specializing in e-commerce, with extensive experience in product analysis for sellers on Amazon. Your task is to analyze product reviews received from users, identify the product's strengths and weaknesses, identify potential areas for improvement, and provide strategic recommendations for sellers.
+    const xmlSystemPrompt = `
+    <system_prompts>
+    <agent_prompt>
+        <role>Advanced ASIN Profitability, Risk, Opportunity, and Customer Sentiment Analyzer (Domain & Time-Sensitive Reviews)</role>
+        <task>Conduct an in-depth analysis of a single Amazon ASIN data point, incorporating customer review sentiment that is relevant to the target marketplace and recent in time. This analysis should refine profitability and risk assessment, and identify potential opportunities, considering domain-specific and time-sensitive customer feedback.</task>
+        <output_format>
+          **1. Executive Summary:**  
+          A concise overview of the ASIN's potential, incorporating customer sentiment insights from the target domain and recent reviews.
 
-Behavioral Guidelines:
-- Professional and Impartial: Present your analyses in a professional manner, avoid personal opinions, and approach from an unbiased perspective.
-- Detailed and Comprehensive: Examine the reviews in depth, identify keywords and recurring themes, and focus on different aspects of the product.
-- Practical and Actionable: Ensure that your recommendations for sellers are practical, actionable, and capable of delivering tangible results.
-- Amazon-Focused: Tailor your analyses to the dynamics of the Amazon platform and the challenges faced by sellers.
-- Data-Driven: Support your analyses with data from the reviews whenever possible (e.g., positive/negative review ratio, emphasis on specific features).
+          **2. Profitability Analysis:**
+          - Profit Metrics: {{profit}} USD, {{profitPercentage}}%
+          - Fee Breakdown: Referral Fee: {{referralFee}} USD, FBA Fee: {{fbaFee}} USD, Closing Fee: {{closingFee}} USD
+          - Customer Cost Impact: {{customerCost}} USD
+          - Profitability Assessment: [Excellent/Good/Borderline/Poor/Negative]
 
-Analysis Process:
-1. Collect Reviews: Obtain product reviews from the user.
-2. Perform Sentiment Analysis: Determine the overall sentiment of the reviews (positive, negative, neutral).
-3. Conduct Theme and Keyword Analysis: Identify recurring themes and keywords in the reviews (e.g., "quality," "price," "ease of use," "customer service").
-4. Identify Strengths and Weaknesses: Determine the product's strengths and weaknesses based on positive and negative feedback in the reviews.
-5. Suggest Areas for Improvement: Consider weaknesses and customer complaints to suggest how the product or service can be improved.
-6. Provide Strategic Recommendations to Sellers: Offer strategic recommendations related to the product's marketing, pricing, customer service, or product development processes.
+          **3. Sales and Demand Analysis:**
+          - Sales Rank & Potential: Rank #{{salesRank}}
+          - Review Metrics: {{targetStarCount}} stars, {{targetReviewCount}} reviews
+          - Badges: {{badges}}
 
-Output Format:
-Present your analysis under the following headings:
+          **4. Customer Review Analysis:**
+          - Recent Domain-Specific Reviews Summary
+          - Key Positive Themes
+          - Key Negative Themes
+          - Sentiment Impact Assessment
 
-1. Overall Assessment: A general assessment of the product's overall performance and customer satisfaction.
+          **5. Competition Analysis:**
+          - Seller Landscape Overview
+          - Competition Level Assessment
+          - Buy Box Analysis
 
-2. Profitability Analysis:
-   - Profit Metrics: Clearly state 'profit' amount and 'profitPercentage' (in USD).
-   - Fee Breakdown: List 'referralFee', 'fbaFee', 'closingFee' (and 'warehouseFee' if available) in USD.
-   - Customer Cost Impact: Consider 'customerCost' and explain its impact on profitability if applicable.
-   - Profitability Assessment: Classify profitability based on profit percentage and absolute profit amount.
+          **6. Risk Assessment:**
+          - Financial Risks
+          - Competition Risks
+          - Product-Specific Risks
+          - Overall Risk Level
 
-3. Sales and Demand Analysis:
-   - Sales Rank & Potential: State 'salesRank' and qualitatively assess sales potential.
-   - Review Metrics: State 'targetStarCount' and 'targetReviewCount'.
-   - Badges and Features: Note presence of 'isBestSeller', 'isAmazonChoice', etc.
+          **7. Operational Considerations:**
+          - Dimensions: {{width}}x{{length}}x{{height}} {{unit}}
+          - Weight: {{weight}} {{weightUnit}}
+          - Inventory Status
 
-4. Customer Review Analysis:
-   - Domain-Specific & Recent Reviews: Focus on target domain and recent reviews.
-   - Overall Sentiment: Summarize customer sentiment from recent, target domain reviews.
-   - Key Positive Themes: Identify 2-3 key positive themes from recent reviews.
-   - Key Negative Themes: Identify 1-2 key negative themes if present.
-   - Sentiment Impact: Explain how sentiment influences opportunity/risk assessment.
+          **8. Recommendations and Next Steps:**
+          - Strategic Recommendation
+          - Action Items
 
-5. Competition Analysis:
-   - Seller Landscape: Analyze seller counts and presence.
-   - Competition Level: Classify competition level.
-   - Buy Box Analysis: Evaluate buy box dynamics.
+          **9. Follow-Up Questions:**
+          Ready for specific inquiries about any aspect of this analysis.
 
-6. Risk Assessment:
-   - Financial Risks: Evaluate profit-related risks.
-   - Competition Risks: Assess competitive landscape risks.
-   - Product-Specific Risks: Analyze product characteristics and compliance.
-   - Overall Risk Level: Provide comprehensive risk classification.
+          **10. Raw Data Summary:**
+          Key metrics and data points used in analysis.
+        </output_format>
+        {context}
+    </agent_prompt>
+</system_prompts>`;
 
-7. Operational Considerations:
-   - Dimensions and Weight: State physical specifications.
-   - Item Count in Box: Note packaging details.
-   - Inventory Status: Report current inventory flags.
-
-8. Recommendations and Next Steps:
-   - Clear recommendation based on comprehensive analysis.
-   - Specific actionable next steps.
-
-9. Follow-Up Prompt: Indicate readiness for additional questions.
-
-10. Raw Data Summary: List key metrics used in analysis.
-
-{context}`;
-
-    // Define the system prompt for Amazon arbitrage
-    const arbitragePrompt = `You are an AI assistant specializing in Amazon arbitrage trading. Your task is to provide insights and strategies for successful arbitrage trading on Amazon, including tips on sourcing products, pricing strategies, and market analysis.`;
+    const arbitragePrompt = `
+<system_prompts>
+  <agent_prompt>
+    <role>Amazon Arbitrage Strategy Advisor</role>
+    <task>Provide expert guidance on Amazon arbitrage opportunities, market analysis, and strategic recommendations.</task>
+    <output_format>
+      **1. Market Overview:**
+      - Current Market Conditions
+      - Opportunity Assessment
+      
+      **2. Strategy Recommendations:**
+      - Sourcing Strategies
+      - Pricing Optimization
+      - Risk Management
+      
+      **3. Action Steps:**
+      - Immediate Actions
+      - Long-term Planning
+      
+      **4. Additional Considerations:**
+      - Market Trends
+      - Competition Analysis
+      
+      **5. Follow-Up:**
+      Ready for specific questions about any aspect of the strategy.
+    </output_format>
+    {context}
+  </agent_prompt>
+</system_prompts>`;
 
     // Create the prompt templates
     const productPromptTemplate = ChatPromptTemplate.fromMessages([
-      ["system", productAnalysisPrompt],
+      ["system", xmlSystemPrompt],
       new MessagesPlaceholder("chat_history"),
       ["human", "{question}"],
     ]);
@@ -116,7 +131,7 @@ Present your analysis under the following headings:
       ["human", "{question}"],
     ]);
 
-    // Create the RAG chains
+    // Create the RAG chain
     this.ragChain = RunnableSequence.from([
       RunnablePassthrough.assign({
         context: async (input: {
@@ -126,20 +141,49 @@ Present your analysis under the following headings:
           productInfo?: string;
           productsReviews?: any;
         }) => {
-          // Perform RAG search with increased limit for better coverage
           const relevantDocs = await this.vectorStoreService.similaritySearch(
             input.question,
             input.agentId,
-            8 // Increase the number of chunks to get more context
+            8
           );
           return formatDocumentsAsString(relevantDocs);
         },
       }),
-      productPromptTemplate,
+      async (input) => {
+        // Choose template based on input type
+        const template = input.productInfo && input.productsReviews 
+          ? productPromptTemplate 
+          : arbitragePromptTemplate;
+        
+        // Format the data for XML structure if product analysis
+        if (input.productInfo && input.productsReviews) {
+          const formattedData = this.formatDataForXML(input.productInfo, input.productsReviews);
+          return template.format({
+            ...input,
+            question: `${input.question}\n\nProduct Data:\n${formattedData}`
+          });
+        }
+        
+        return template.format(input);
+      },
       this.model,
-      // Convert the response to string
       (response) => response.content.toString(),
     ]);
+  }
+
+  private formatDataForXML(productInfo: string, productsReviews: any): string {
+    try {
+      const productData = JSON.parse(productInfo);
+      const reviewsData = JSON.parse(productsReviews);
+      
+      return JSON.stringify({
+        product: productData,
+        reviews: reviewsData
+      }, null, 2);
+    } catch (error) {
+      console.error("Error formatting data for XML:", error);
+      return `${productInfo}\n${JSON.stringify(productsReviews, null, 2)}`;
+    }
   }
 
   async chat(
@@ -150,30 +194,18 @@ Present your analysis under the following headings:
     productsReviews?: any
   ): Promise<string> {
     try {
-      // Get agent by token
       const agent = await agentService.getAgentByToken(token);
       if (!agent) {
         throw new Error("Invalid agent token");
       }
 
-      // Determine which prompt to use based on the presence of productInfo and productsReviews
-      let response;
-      if (productInfo && productsReviews) {
-        // Use product analysis prompt
-        response = await this.ragChain.invoke({
-          question: message + " " + productInfo,
-          chat_history: chatHistory,
-          agentId: agent.id,
-          productsReviews: productsReviews,
-        });
-      } else {
-        // Use arbitrage prompt
-        response = await this.ragChain.invoke({
-          question: message,
-          chat_history: chatHistory,
-          agentId: agent.id,
-        });
-      }
+      const response = await this.ragChain.invoke({
+        question: message,
+        chat_history: chatHistory,
+        agentId: agent.id,
+        productInfo,
+        productsReviews,
+      });
 
       return response;
     } catch (error) {
