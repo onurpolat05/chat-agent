@@ -24,7 +24,7 @@ export const config: Config = {
     apiKey: process.env.OPENAI_API_KEY || "",
   },
   ai: {
-    model: process.env.AI_MODEL || "gpt-4o-mini",
+    model: process.env.AI_MODEL || "gpt-o3-mini",
   },
   cors: {
     origins: process.env.CORS_ORIGINS?.split(",") || [
