@@ -26,7 +26,7 @@ export class ChatService {
     this.model = new ChatOpenAI({
       openAIApiKey: config.openai.apiKey,
       modelName: config.ai.model,
-      temperature: 0.7,
+ 
     });
     this.vectorStoreService = new VectorStoreService();
     this.initializeChain();
